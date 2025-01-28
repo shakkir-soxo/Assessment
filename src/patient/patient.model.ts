@@ -7,7 +7,7 @@ import { Table,Column,DataType,Model } from "sequelize-typescript";
 export class Patient extends Model {
     @Column({
         type:DataType.STRING,            // Creating name column
-        allowNull:false
+        allowNull:false;;;
     })
 
     name:string
