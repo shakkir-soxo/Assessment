@@ -1,9 +1,11 @@
-import { Controller,Get, Param,Post,Body,Put, Delete,UseGuards} from "@nestjs/common";
+import { Controller,Get, Param,Post,Body,Put, Delete,UseGuards, BadRequestException, HttpCode, InternalServerErrorException, NotFoundException} from "@nestjs/common";
 import { PatientService } from "./patient.service";
-import { JwtAuthGuard } from "src/auth/jwt.guard";
+import { CreatePatientDto } from "./dto/create.patient.dto";
+import { UpdatePatientDto } from "./dto/update.patient.dto";
+import { ParseIntPipe } from "@nestjs/common";
 
 @Controller('patient')
-@UseGuards(JwtAuthGuard) // Protect the route by JwtAuthGuard
+// @UseGuards(JwtAuthGuard) // Protect the route by JwtAuthGuard
 
 export class PatientController {
     constructor(
@@ -22,22 +24,35 @@ export class PatientController {
      // Creating a new record of patient into the database
 
     @Post('create')
+    @HttpCode(201)
      async createPatient(
-        @Body('name') name:string,
-        @Body('address') address:string,
-        @Body('sex') sex:string,
-        @Body('dateOfBirth') dateOfBirth:Date,
-        @Body('mobileNumber') mobileNumber:number,
-        @Body('isMarried') isMarried:boolean
+      @Body() createPatientDto:CreatePatientDto
     ){
-       return this.patientService.createPatient(
-        name,
-        address,
-        sex,
-        dateOfBirth,
-        mobileNumber,
-        isMarried
-       )
+
+    try {
+      
+     
+       const patient = await this.patientService.createPatient(createPatientDto)
+       
+       console.log(patient.name)
+
+       if(patient){
+         return  patient
+       }else {
+          throw new BadRequestException("Patient creation failed,no patient table is created")
+       }
+            
+      } catch (error) {
+         if(error instanceof BadRequestException){
+            throw new BadRequestException(error.message,{
+               cause:new Error(),
+                
+            })
+         }
+
+         throw new InternalServerErrorException("Internal server error")
+      }
+     
     }
     
     // Put:update/id
@@ -46,17 +61,37 @@ export class PatientController {
 
     @Put('update/:id')
      async updatePatient(
-        @Param('id') id:number,
-        @Body('updateData') updateData:{}
+        @Param('id',ParseIntPipe) id:number,
+        @Body('updateData') updateData: UpdatePatientDto
     ){
-       return this.patientService.updatePatient(+id,updateData)
+      
+      try {
+         if(!id||!updateData){
+              throw new BadRequestException("Please provide all required fields")
+         }
+
+         const patient = await this.patientService.updatePatient(+id,updateData)
+         if(!patient){
+            throw  new NotFoundException("Updating failed")
+
+         }
+
+         return patient
+      } catch (error) {
+         if(error instanceof BadRequestException){
+             throw new BadRequestException(error.message)
+         }
+
+         throw new InternalServerErrorException('Internal server error ')
+      }
+       
     }
     
     // Delete:/delete/id
     // Finding the patient record in the table by id
     // Deleting the existing record of the patient by that id
     @Delete('delete/:id')
-     async deletePatient(@Param('id') id:number){
+     async deletePatient(@Param('id',ParseIntPipe) id:number){
        return this.patientService.deletePatient(+id)
     }
    

@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Patient } from "./patient.model";
 import { InjectModel } from "@nestjs/sequelize";
+import { CreatePatientDto } from "./dto/create.patient.dto";
+
 
 @Injectable()
 
@@ -12,24 +14,9 @@ export class PatientService {
         private patientModel: typeof Patient
     ){}
 
-    async createPatient(
-        name:string,
-        address:string,
-        sex:string,
-        dateOfBirth:Date,
-        mobileNumber:number,
-        isMarried:boolean
-
-    ):Promise<Patient> {
+    async createPatient(patientData:Partial<CreatePatientDto>):Promise<Patient> {
         // Create  new record of patient in the table
-        const patient = await this.patientModel.create({
-         name,
-         address,
-         sex,
-         dateOfBirth,
-         mobileNumber,
-         isMarried
-        }) 
+        const patient = await this.patientModel.create(patientData) 
         
         // Returning patient object
         return patient
