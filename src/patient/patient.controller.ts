@@ -3,9 +3,10 @@ import { PatientService } from "./patient.service";
 import { CreatePatientDto } from "./dto/create.patient.dto";
 import { UpdatePatientDto } from "./dto/update.patient.dto";
 import { ParseIntPipe } from "@nestjs/common";
+import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller('patient')
-// @UseGuards(JwtAuthGuard) // Protect the route by JwtAuthGuard
+@UseGuards(AuthGuard) 
 
 export class PatientController {
     constructor(
@@ -92,7 +93,22 @@ export class PatientController {
     // Deleting the existing record of the patient by that id
     @Delete('delete/:id')
      async deletePatient(@Param('id',ParseIntPipe) id:number){
-       return this.patientService.deletePatient(+id)
+       try {
+         const patient = await this.patientService.deletePatient(+id)
+         if(!patient){
+            throw new NotFoundException('Deleting failed')
+         }
+
+         return patient
+       } catch (error) {
+          if(error instanceof NotFoundException){
+            throw new NotFoundException(error.message)
+          }
+
+         throw new InternalServerErrorException('Internal server error')
+         
+       }
+     
     }
    
     

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
+// import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Patient } from './patient/patient.model';
 import { PatientModule } from './patient/patient.module';
@@ -13,15 +13,15 @@ import { User } from './user/user.model';
     
      SequelizeModule.forRoot({ 
     dialect:"mssql",    
-    host:".\sqlexpress",
+    host:"https://ec2-15-206-206-108.ap-south-1.compute.amazonaws.com",
     port:1433,
-    username:"sa",  // Database username
-    password:"shak123",  // Database password
+    username:"user_soxo",  // Database username
+    password:"soxo@123",  // Database password
     database:"soxo", // Database name
     
   }),
     ],
   controllers: [],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}
